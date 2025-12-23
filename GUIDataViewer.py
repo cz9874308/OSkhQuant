@@ -1,3 +1,38 @@
+# coding: utf-8
+"""
+数据查看器模块
+
+本模块实现 MiniQMT 本地数据的可视化查看功能，支持浏览、搜索和分析
+本地缓存的行情数据文件。
+
+核心功能
+--------
+- **数据浏览**：树形结构浏览 MiniQMT 数据目录
+- **数据解析**：支持 Tick、1分钟、5分钟、日线等周期数据
+- **表格展示**：以表格形式展示解析后的行情数据
+- **数据补充**：支持增量下载和补充历史数据
+
+界面组件
+--------
+- **GUIDataViewer**: 数据查看器主窗口
+- **LoadingDialog**: 加载进度对话框
+- **SupplementThread**: 数据补充线程（多进程后端）
+- **DataLoadThread**: 数据加载线程
+
+使用方式
+--------
+通常由主程序或数据管理模块调用：
+
+>>> from GUIDataViewer import GUIDataViewer
+>>> viewer = GUIDataViewer()
+>>> viewer.show()
+
+注意事项
+--------
+- 需要正确配置 MiniQMT 数据目录路径
+- 大文件加载可能需要较长时间
+- 数据补充功能使用多进程避免阻塞界面
+"""
 import sys
 import os
 import struct

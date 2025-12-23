@@ -2207,3 +2207,185 @@ names_dict = get_stock_names(['000001.SZ', '600519.SH'], stock_list_path)
 # 返回: {'000001.SZ': '平安银行', '600519.SH': '贵州茅台'}
 print(names_dict)
 ```
+
+---
+
+# 系统架构与数据流程图
+
+## 📐 系统架构概览
+
+```mermaid
+graph TB
+    subgraph UI["🖥️ GUI 用户界面层"]
+        GUIkhQuant["GUIkhQuant.py<br/>主控界面"]
+        GUI["GUI.py<br/>数据下载界面"]
+        GUIDataViewer["GUIDataViewer.py<br/>数据查看器"]
+        GUIScheduler["GUIScheduler.py<br/>任务调度器"]
+        GUIplotLoadData["GUIplotLoadData.py<br/>数据可视化"]
+        BacktestResult["backtest_result_window.py<br/>回测报告"]
+        SettingsDialog["SettingsDialog.py<br/>系统设置"]
+    end
+
+    subgraph Core["⚙️ 核心框架层"]
+        khFrame["khFrame.py<br/>策略执行引擎"]
+        khTrade["khTrade.py<br/>交易管理"]
+        khRisk["khRisk.py<br/>风险控制"]
+        khConfig["khConfig.py<br/>配置管理"]
+    end
+
+    subgraph Tools["🔧 工具层"]
+        khQTTools["khQTTools.py<br/>量化工具集"]
+        MyTT["MyTT.py<br/>技术指标库"]
+        khQuantImport["khQuantImport.py<br/>统一导入"]
+    end
+
+    subgraph Data["📊 数据层"]
+        miniQMT_parser["miniQMT_data_parser.py<br/>数据解析器"]
+        miniQMT_viewer["miniQMT_data_viewer.py<br/>数据查看器"]
+    end
+
+    subgraph External["🌐 外部依赖"]
+        xtquant["xtquant<br/>MiniQMT API"]
+        PyQt5["PyQt5<br/>GUI框架"]
+        Pandas["pandas/numpy<br/>数据处理"]
+    end
+
+    GUIkhQuant --> khFrame
+    GUIkhQuant --> khTrade
+    GUIkhQuant --> SettingsDialog
+    GUIkhQuant --> BacktestResult
+    GUI --> miniQMT_parser
+    GUIDataViewer --> miniQMT_viewer
+
+    khFrame --> khTrade
+    khFrame --> khRisk
+    khFrame --> khConfig
+    khFrame --> khQTTools
+
+    khQTTools --> MyTT
+    khQTTools --> xtquant
+    khTrade --> xtquant
+
+    miniQMT_parser --> xtquant
+    miniQMT_viewer --> Pandas
+
+    GUIkhQuant --> PyQt5
+    GUI --> PyQt5
+```
+
+## 📈 回测数据流程图
+
+```mermaid
+flowchart TB
+    subgraph Input["📥 数据输入"]
+        UserConfig["用户配置<br/>.kh 文件"]
+        Strategy["策略文件<br/>.py 脚本"]
+        StockPool["股票池<br/>代码列表"]
+    end
+
+    subgraph DataPrep["📊 数据准备"]
+        DataDownload["数据下载<br/>download_history_data"]
+        DataLoad["数据加载<br/>get_market_data_ex"]
+        DataCache["本地缓存<br/>MiniQMT数据库"]
+    end
+
+    subgraph Engine["⚙️ 回测引擎"]
+        Framework["KhQuantFramework<br/>策略框架"]
+        Trigger["触发器<br/>Tick/K线/定时"]
+        TradeManager["KhTradeManager<br/>交易管理"]
+    end
+
+    subgraph Strategy["📝 策略执行"]
+        khInit["khInit<br/>策略初始化"]
+        khHandlebar["khHandlebar<br/>行情处理"]
+        khPreMarket["khPreMarket<br/>盘前任务"]
+        khPostMarket["khPostMarket<br/>盘后任务"]
+    end
+
+    subgraph Trade["💹 交易处理"]
+        Signal["交易信号"]
+        CostCalc["成本计算<br/>佣金/印花税/滑点"]
+        Position["持仓管理"]
+        Risk["风险控制"]
+    end
+
+    subgraph Output["📤 结果输出"]
+        TradeLog["交易记录"]
+        Performance["绩效指标"]
+        Report["回测报告"]
+        Chart["可视化图表"]
+    end
+
+    UserConfig --> Framework
+    Strategy --> Framework
+    StockPool --> DataDownload
+
+    DataDownload --> DataCache
+    DataCache --> DataLoad
+    DataLoad --> Framework
+
+    Framework --> Trigger
+    Trigger --> khInit
+    Trigger --> khHandlebar
+    Trigger --> khPreMarket
+    Trigger --> khPostMarket
+
+    khHandlebar --> Signal
+    Signal --> TradeManager
+    TradeManager --> CostCalc
+    CostCalc --> Position
+    Position --> Risk
+
+    TradeManager --> TradeLog
+    Position --> Performance
+    Performance --> Report
+    Report --> Chart
+```
+
+## 🔄 核心模块交互图
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 用户
+    participant GUI as 🖥️ GUIkhQuant
+    participant Frame as ⚙️ khFrame
+    participant Trade as 💹 khTrade
+    participant Data as 📊 xtquant
+    participant Strategy as 📝 策略脚本
+
+    User->>GUI: 1. 加载配置文件
+    GUI->>GUI: 2. 解析.kh配置
+    User->>GUI: 3. 点击"开始运行"
+    
+    GUI->>Frame: 4. 初始化框架
+    Frame->>Data: 5. 加载历史数据
+    Data-->>Frame: 6. 返回行情数据
+    
+    Frame->>Strategy: 7. 调用 khInit()
+    Strategy-->>Frame: 8. 初始化完成
+    
+    loop 每个时间点
+        Frame->>Strategy: 9. 调用 khHandlebar()
+        Strategy->>Strategy: 10. 计算指标/生成信号
+        Strategy->>Trade: 11. 发送交易信号
+        Trade->>Trade: 12. 计算成本/风控检查
+        Trade-->>Frame: 13. 更新持仓
+        Frame->>GUI: 14. 更新日志/进度
+    end
+    
+    Frame->>Strategy: 15. 调用 khPostMarket()
+    Frame->>GUI: 16. 生成回测报告
+    GUI->>User: 17. 显示结果窗口
+```
+
+## 🏗️ 模块职责说明
+
+| 模块 | 职责 | 核心功能 |
+|------|------|----------|
+| **GUIkhQuant** | 主控界面 | 参数配置、策略执行、日志显示 |
+| **khFrame** | 策略引擎 | 回测调度、触发器管理、数据订阅 |
+| **khTrade** | 交易管理 | 订单处理、成本计算、持仓管理 |
+| **khQTTools** | 工具集 | 数据获取、交易时间判断、多进程支持 |
+| **MyTT** | 指标库 | MA/EMA/MACD/KDJ等技术指标 |
+| **khRisk** | 风险控制 | 持仓限制、止损控制 |
+| **khConfig** | 配置管理 | 参数解析、多环境配置 |

@@ -1,3 +1,46 @@
+# coding: utf-8
+"""
+回测结果分析窗口模块
+
+本模块提供回测结果的可视化分析界面，展示策略表现的多维度指标和图表。
+
+核心功能
+--------
+- **收益曲线**：策略净值与基准对比
+- **回撤分析**：最大回撤、回撤曲线可视化
+- **绩效指标**：夏普比率、索提诺比率、阿尔法、贝塔等
+- **交易记录**：详细的买卖记录和手续费
+- **日收益分析**：每日资产变化和收益率
+- **收益分布**：收益率分布直方图
+- **月度热力图**：月度收益热力图
+
+核心组件
+--------
+- **BacktestResultWindow**: 主窗口类
+- **FigureCanvas**: Matplotlib 图表画布
+- **QTableWidget**: 交易记录和日收益表格
+
+展示的指标
+----------
+- **收益指标**：总收益率、年化收益率、基准收益率
+- **风险指标**：最大回撤、年化波动率
+- **风险调整收益**：夏普比率、索提诺比率
+- **相对表现**：阿尔法、贝塔
+- **交易统计**：胜率、盈亏比、最大连续盈亏
+
+使用方式
+--------
+>>> from backtest_result_window import BacktestResultWindow
+>>> window = BacktestResultWindow(backtest_dir="./backtest_results/20231201_strategy")
+>>> window.show()
+
+注意事项
+--------
+- 需要读取回测结果目录中的 CSV 文件
+- 支持自适应分辨率的字体缩放
+- 使用深色主题优化视觉体验
+- 图表支持鼠标悬停显示详细数据
+"""
 import logging
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 

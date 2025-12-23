@@ -1,4 +1,52 @@
 # coding: utf-8
+"""
+交易管理模块
+
+本模块实现量化交易的订单管理和成本计算功能，是策略回测和实盘交易的核心组件。
+
+核心功能
+--------
+- **订单管理**：创建、执行和追踪交易订单
+- **成本计算**：精确计算佣金、印花税、过户费、滑点等交易成本
+- **持仓管理**：维护和更新持仓信息
+- **资产管理**：追踪现金和总资产变化
+
+交易成本模型
+-----------
+交易成本 = 佣金 + 印花税 + 过户费 + 流量费
+
+- **佣金**：max(成交金额 × 佣金费率, 最低佣金)，默认费率 0.03%，最低 5 元
+- **印花税**：仅卖出收取，成交金额 × 0.1%
+- **过户费**：仅沪市股票，成交金额 × 0.001%
+- **流量费**：每笔固定 0.1 元
+
+滑点模型
+--------
+支持两种滑点计算方式：
+
+1. **按跳数 (tick)**：滑点 = 最小变动价 × 跳数
+   - 买入时价格上浮，卖出时价格下调
+   
+2. **按比例 (ratio)**：滑点 = 价格 × 滑点比例 / 2
+   - 默认比例 0.1%
+
+使用方式
+--------
+交易管理器通常由框架自动创建：
+
+>>> from khTrade import KhTradeManager
+>>> trader = KhTradeManager(config)
+>>> trader.init()
+>>> # 处理交易信号
+>>> signals = [{"code": "000001.SZ", "action": "buy", "price": 10.0, "volume": 100}]
+>>> trader.process_signals(signals)
+
+注意事项
+--------
+- 回测模式假设订单立即全部成交
+- T+1 模式下当天买入不可当天卖出
+- 卖出前自动检查可用持仓是否充足
+"""
 from typing import Dict, List, Optional
 import datetime
 from types import SimpleNamespace
@@ -6,8 +54,44 @@ from types import SimpleNamespace
 from xtquant.xttrader import XtQuantTraderCallback
 from xtquant import xtconstant
 
+
 class KhTradeManager:
-    """交易管理类"""
+    """交易管理类
+    
+    负责处理交易信号、执行订单、计算交易成本，并维护订单、资产、持仓等状态。
+    
+    这个类就像一个"交易员"，接收策略发出的交易信号，计算各种费用后执行交易，
+    并记录每笔交易的详细信息。
+    
+    Attributes:
+        config: 配置对象
+        callback: 交易回调对象，用于通知订单状态变化
+        orders (dict): 订单记录字典，key 为订单ID
+        assets (dict): 资产信息，包含 cash(现金)、market_value(市值) 等
+        trades (dict): 成交记录字典
+        positions (dict): 持仓信息字典，key 为股票代码
+        min_commission (float): 最低佣金（元）
+        commission_rate (float): 佣金费率
+        stamp_tax_rate (float): 印花税率
+        flow_fee (float): 流量费（元/笔）
+        slippage (dict): 滑点配置
+        price_decimals (int): 价格精度（小数位数）
+        t0_mode (bool): T+0 交易模式开关
+    
+    Example:
+        >>> config = KhConfig("strategy.kh")
+        >>> trader = KhTradeManager(config)
+        >>> trader.init()
+        >>> # 买入信号
+        >>> signal = {
+        ...     "code": "600519.SH",
+        ...     "action": "buy",
+        ...     "price": 1800.0,
+        ...     "volume": 100,
+        ...     "reason": "均线金叉"
+        ... }
+        >>> trader.process_signals([signal])
+    """
     
     def __init__(self, config, callback=None):
         self.config = config

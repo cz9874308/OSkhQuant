@@ -1,4 +1,67 @@
 # coding: utf-8
+"""
+策略执行引擎模块
+
+本模块是看海量化交易系统的核心，实现了策略的加载、执行和回测功能。
+提供了完整的事件驱动回测框架，支持多种触发方式和数据周期。
+
+核心概念
+--------
+- **KhQuantFramework**: 策略执行框架主类，负责回测流程调度
+- **Trigger**: 触发器机制，决定何时调用策略的 khHandlebar 函数
+- **Callback**: 交易回调，处理委托、成交、持仓变动等事件
+
+触发器类型
+----------
+1. **TickTrigger**: 每个 Tick 数据到达时触发
+2. **KLineTrigger**: K线周期结束时触发（1m/5m/1d）
+3. **CustomTimeTrigger**: 自定义时间点触发
+
+回测流程
+--------
+```
+1. 加载配置文件 (.kh)
+    ↓
+2. 加载策略模块 (.py)
+    ↓
+3. 初始化虚拟账户
+    ↓
+4. 加载历史数据 (xtquant)
+    ↓
+5. 遍历每个时间点
+    ↓
+6. 触发器判断 → 调用 khHandlebar()
+    ↓
+7. 处理交易信号 → 更新持仓
+    ↓
+8. 记录回测结果
+    ↓
+9. 生成绩效报告
+```
+
+策略接口规范
+-----------
+策略文件需实现以下函数（可选）：
+
+- `khInit(data)`: 策略初始化，在回测开始时调用一次
+- `khHandlebar(data)`: 主策略逻辑，每个触发时刻调用
+- `khPreMarket(data)`: 盘前任务，每日开盘前调用
+- `khPostMarket(data)`: 盘后任务，每日收盘后调用
+
+使用方式
+--------
+通常由 GUI 调用，也可独立使用：
+
+>>> from khFrame import KhQuantFramework
+>>> framework = KhQuantFramework("config.kh", "strategy.py")
+>>> framework.run()  # 开始回测
+
+注意事项
+--------
+- 回测模式假设所有订单立即全部成交
+- 数据需提前通过数据中心下载到本地
+- T+1 规则：当天买入的股票需次日才能卖出（除非启用 T+0 模式）
+"""
 import time
 import datetime
 import traceback

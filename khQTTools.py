@@ -1,3 +1,61 @@
+# coding: utf-8
+"""
+量化工具模块
+
+本模块提供看海量化系统所需的各类工具函数和工具类，涵盖交易时间判定、
+股票池管理、价格精度处理、信号生成等核心功能。
+
+核心功能
+--------
+**交易时间相关**：
+    - `is_trade_time()`: 判断当前是否在交易时间内
+    - `is_trade_day()`: 判断指定日期是否为交易日
+    - `get_trade_days_count()`: 计算日期范围内的交易日数量
+
+**股票类型判断**：
+    - `is_etf()`: 判断是否为 ETF 产品
+    - `determine_pool_type()`: 判断股票池类型（股票/ETF/混合）
+
+**T+0 支持**：
+    - `is_t0_etf()`: 判断是否支持 T+0 交易
+    - `check_t0_support()`: 检查股票池的 T+0 支持情况
+    - `get_t0_details()`: 获取 T+0 支持的详细信息
+
+**价格处理**：
+    - `get_price_decimals()`: 获取价格精度设置
+    - `round_price()`: 按精度舍入价格
+    - `format_price()`: 格式化价格为字符串
+
+**交易信号**：
+    - `generate_signal()`: 生成标准化交易信号
+    - `calculate_max_buy_volume()`: 计算最大可买入数量
+
+**数据获取**：
+    - `khHistory()`: 获取历史行情数据
+    - `khMA()`: 计算移动平均线
+
+使用方式
+--------
+推荐直接导入模块级函数使用：
+
+>>> from khQTTools import is_trade_day, generate_signal, khMA
+>>> if is_trade_day("2024-01-15"):
+...     signals = generate_signal(data, "600519.SH", 1800.0, 0.5, "buy")
+
+也可使用兼容性保留的类：
+
+>>> from khQTTools import KhQuTools
+>>> tools = KhQuTools()
+>>> if tools.is_trade_time():
+...     print("正在交易时间")
+
+注意事项
+--------
+- 本模块在子进程中会自动禁用 Qt 相关功能
+- T+0 ETF 列表从 data/T0型ETF.csv 加载
+- 交易日判断依赖 holidays 库的中国节假日数据
+"""
+
 # 多进程保护 - 防止在子进程中意外启动Qt应用
 import sys
 import os

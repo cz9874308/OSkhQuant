@@ -1,3 +1,54 @@
+# coding: utf-8
+"""
+技术指标计算库 (MyTT)
+
+本模块提供完整的技术分析指标函数集合，兼容通达信指标语法，
+使用 NumPy 和 Pandas 实现高性能计算。
+
+模块来源
+--------
+基于开源项目 https://github.com/mpquant/MyTT 进行适配和优化。
+
+功能分类
+--------
+**0级 - 核心工具函数**：
+    RD, RET, ABS, LN, POW, SQRT, MAX, MIN, IF, REF, DIFF, STD, SUM, 
+    CONST, HHV, LLV, HHVBARS, LLVBARS, MA, EMA, SMA, WMA, DMA, 
+    AVEDEV, SLOPE, FORCAST, LAST
+
+**1级 - 应用层函数**：
+    COUNT, EVERY, EXIST, FILTER, BARSLAST, BARSLASTCOUNT, BARSSINCEN,
+    CROSS, LONGCROSS, VALUEWHEN, BETWEEN, TOPRANGE, LOWRANGE
+
+**2级 - 技术指标函数**：
+    MACD, KDJ, RSI, WR, BIAS, BOLL, PSY, CCI, ATR, BBI, DMI, TAQ, KTN,
+    TRIX, VR, CR, EMV, DPO, BRAR, DFMA, MTM, MASS, ROC, EXPMA, OBV, 
+    MFI, ASI, XSII, SAR
+
+数据字段映射
+-----------
+- CLOSE: 对应 "收盘价" 字段
+- HIGH: 对应 "最高价" 字段
+- LOW: 对应 "最低价" 字段
+- OPEN: 对应 "开盘价" 字段
+- VOL: 对应 "成交量(手)" 字段（注意：1手=100股）
+
+使用方式
+--------
+>>> from MyTT import MA, MACD, KDJ
+>>> # 计算20日均线
+>>> ma20 = MA(close_prices, 20)
+>>> # 计算MACD指标
+>>> dif, dea, macd = MACD(close_prices)
+>>> # 判断金叉
+>>> golden_cross = CROSS(MA(close, 5), MA(close, 10))
+
+注意事项
+--------
+- 所有函数返回 numpy.ndarray 类型
+- 计算初期会产生 NaN 值（数据不足时）
+- 建议输入数据长度 > 指标周期 * 2
+"""
 # 代码地址 https://github.com/mpquant/MyTT
 import numpy as np
 import pandas as pd

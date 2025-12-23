@@ -1,3 +1,42 @@
+# coding: utf-8
+"""
+股票数据可视化模块
+
+本模块提供交互式股票数据可视化功能，支持多种周期数据的图表展示。
+
+核心功能
+--------
+- **数据加载**：从文件夹批量加载 CSV 格式的股票数据
+- **图表展示**：K线图、分时图、成交量等多维度可视化
+- **交互操作**：支持缩放、平移、数据点悬停显示
+- **统计信息**：实时显示文件统计和数据概览
+
+核心组件
+--------
+- **StockDataAnalyzerGUI**: 主窗口类
+- **HelpDialog**: 帮助对话框
+- **FigureCanvas**: Matplotlib 图表画布
+
+支持的数据周期
+-------------
+- Tick 数据（需按日期选择）
+- 1分钟、5分钟数据（需按日期选择）
+- 日线、周线、月线数据
+
+使用方式
+--------
+>>> from GUIplotLoadData import StockDataAnalyzerGUI
+>>> app = QApplication(sys.argv)
+>>> window = StockDataAnalyzerGUI()
+>>> window.show()
+>>> sys.exit(app.exec_())
+
+注意事项
+--------
+- 使用无边框窗口设计，支持自定义拖拽和缩放
+- 自动识别股票代码和名称
+- 支持深色主题
+"""
 import sys
 import os
 import pandas as pd

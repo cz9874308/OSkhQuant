@@ -1,3 +1,37 @@
+# coding: utf-8
+"""
+定时数据补充调度器模块
+
+本模块提供定时自动补充历史数据的功能，支持按周期自动执行数据更新任务。
+
+核心功能
+--------
+- **定时调度**：支持每日、每周定时执行数据补充
+- **股票池选择**：支持沪深A股、ETF、自定义股票池
+- **周期配置**：支持 Tick、1分钟、5分钟、日线等多种周期
+- **进度监控**：实时显示补充进度和日志
+- **多进程执行**：使用独立进程避免界面卡顿
+
+核心组件
+--------
+- **GUIScheduler**: 定时调度器主窗口
+- **ScheduledSupplementThread**: 定时补充线程（多进程后端）
+- **supplement_data_worker**: 数据补充工作进程函数
+
+使用方式
+--------
+通常由主程序调用：
+
+>>> from GUIScheduler import GUIScheduler
+>>> scheduler = GUIScheduler()
+>>> scheduler.show()
+
+注意事项
+--------
+- 使用 schedule 库实现定时任务
+- 数据补充在独立进程中执行
+- 支持中断和停止正在运行的任务
+"""
 import sys
 import os
 import logging
